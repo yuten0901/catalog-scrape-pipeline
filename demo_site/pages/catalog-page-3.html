@@ -1,0 +1,71 @@
+<!doctype html>
+<!--
+  Northwind Components — catalogue page 3 of 4: the duplicates.
+
+  Paginated catalogues re-list products when the ordering shifts between page
+  requests, so the same SKU legitimately appears twice in one crawl. Two cases
+  are represented here and they are not the same problem:
+
+    NC-1001  byte-identical to its page-1 copy   -> dropped, no comment needed
+    NC-1003  same SKU, different price           -> dropped, but *reported*,
+                                                    with the differing field
+                                                    named, because which copy is
+                                                    correct is a business call
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Northwind Components — Catalogue (page 3)</title>
+</head>
+<body>
+<header><h1>Northwind Components</h1></header>
+<main id="catalogue">
+
+  <article class="product">
+    <span class="sku">NC-1001</span>
+    <h3 class="title"><a class="link" href="/product/nc-1001.html">Hex Bolt M8x40, Zinc</a></h3>
+    <p class="price">&pound;51.77</p>
+    <p class="stock">In stock (22 available)</p>
+    <p class="rating star-rating Three"></p>
+    <p class="category">Fasteners</p>
+    <time class="listed" datetime="2026-07-14">14 July 2026</time>
+  </article>
+
+  <article class="product">
+    <span class="sku">NC-1003</span>
+    <h3 class="title"><a class="link" href="/product/nc-1003.html">Ball Bearing 6203-2RS</a></h3>
+    <p class="price">1.199,00 &euro;</p>
+    <p class="stock">Pre-order</p>
+    <p class="rating star-rating Five"></p>
+    <p class="category">Bearings</p>
+    <time class="listed" datetime="Aug 1, 2026">1st August 2026</time>
+  </article>
+
+  <article class="product">
+    <span class="sku">NC-3001</span>
+    <h3 class="title"><a class="link" href="/product/nc-3001.html">Proximity Sensor M18 PNP NO</a></h3>
+    <p class="price">&euro;45,00</p>
+    <p class="stock">In stock</p>
+    <p class="rating star-rating Four"></p>
+    <p class="category">Sensors</p>
+    <time class="listed" datetime="2026-05-02">2 May 2026</time>
+  </article>
+
+  <article class="product">
+    <span class="sku">NC-3002</span>
+    <h3 class="title"><a class="link" href="/product/nc-3002.html">Cable Gland M20 IP68</a></h3>
+    <p class="price">&euro;3,20</p>
+    <p class="stock">In stock</p>
+    <p class="rating star-rating Three"></p>
+    <p class="category">Enclosures</p>
+    <time class="listed" datetime="2026-05-02">2 May 2026</time>
+  </article>
+
+</main>
+<nav class="pager">
+  <a class="prev" href="/catalog/page-2.html">&lsaquo; prev</a>
+  <span class="current">3</span>
+  <a class="next" href="/catalog/page-4.html">next &rsaquo;</a>
+</nav>
+</body>
+</html>

@@ -1,0 +1,81 @@
+<!doctype html>
+<!--
+  The JavaScript-rendered half of the demo.
+
+  The HTML that arrives over the wire contains no products at all — only an
+  empty <div id="grid"> and a JSON blob. The <article class="product"> elements
+  that the extractor looks for are created by the script below, one animation
+  frame later, exactly as a client-rendered storefront does it.
+
+  This page is what makes the static-vs-browser distinction real rather than
+  claimed. tests/integration/test_static_vs_browser.py fetches this same URL
+  both ways and asserts that the static fetcher finds zero records and the
+  browser fetcher finds all of them. If someone ever "optimises" the browser
+  path away, that test fails.
+
+  `?page=N` paginates; page 3 renders an empty grid, which is how the
+  `page_param` strategy learns it has reached the end.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Northwind Components — Live catalogue</title>
+</head>
+<body>
+<header><h1>Northwind Components — live catalogue</h1></header>
+
+<div id="grid"><p class="placeholder">Loading catalogue&hellip;</p></div>
+
+<script id="catalogue-data" type="application/json">
+{
+  "1": [
+    {"sku": "NC-5001", "title": "HMI Panel 7in Resistive",       "price": "$249.00", "stock": "In stock",  "rating": "4.5 out of 5", "category": "Automation", "listed": "2026-08-03"},
+    {"sku": "NC-5002", "title": "PLC Digital I/O Module 16DI",   "price": "$139.95", "stock": "In stock",  "rating": "4 out of 5",   "category": "Automation", "listed": "2026-08-03"},
+    {"sku": "NC-5003", "title": "DIN Rail PSU 24V 5A",           "price": "$88.40",  "stock": "Pre-order", "rating": "3.5 out of 5", "category": "Power",      "listed": "2026-08-05"}
+  ],
+  "2": [
+    {"sku": "NC-5004", "title": "Ethernet Switch 5-port DIN",    "price": "$64.00",  "stock": "In stock",  "rating": "5 out of 5",   "category": "Networking", "listed": "2026-08-06"},
+    {"sku": "NC-5005", "title": "Terminal Block 4mm2 (50 pcs)",  "price": "$21.30",  "stock": "In stock",  "rating": "4 out of 5",   "category": "Enclosures", "listed": "2026-08-06"},
+    {"sku": "NC-1001", "title": "Hex Bolt M8x40, Zinc",          "price": "£51.77", "stock": "In stock (22 available)", "rating": "3 out of 5", "category": "Fasteners", "listed": "2026-07-14"}
+  ]
+}
+</script>
+
+<script>
+  (function () {
+    var params = new URLSearchParams(window.location.search);
+    var page = params.get('page') || '1';
+    var data = JSON.parse(document.getElementById('catalogue-data').textContent);
+    var rows = data[page] || [];
+    var grid = document.getElementById('grid');
+
+    function render() {
+      grid.innerHTML = '';
+      rows.forEach(function (row) {
+        var slug = row.sku.toLowerCase();
+        var article = document.createElement('article');
+        article.className = 'product';
+        article.innerHTML =
+          '<span class="sku">' + row.sku + '</span>' +
+          '<h3 class="title"><a class="link" href="/product/' + slug + '.html">' + row.title + '</a></h3>' +
+          '<p class="price">' + row.price + '</p>' +
+          '<p class="stock">' + row.stock + '</p>' +
+          '<p class="rating">' + row.rating + '</p>' +
+          '<p class="category">' + row.category + '</p>' +
+          '<time class="listed" datetime="' + row.listed + '">' + row.listed + '</time>';
+        grid.appendChild(article);
+      });
+      // The signal the scraper waits for. It is set even when the page is
+      // empty, so "finished rendering nothing" is distinguishable from "still
+      // rendering" — otherwise the end of pagination would look like a timeout.
+      grid.setAttribute('data-rendered', String(rows.length));
+    }
+
+    // One frame of delay, so that a scraper which reads the DOM immediately
+    // after navigation gets an empty grid. That is the mistake this page exists
+    // to punish.
+    window.requestAnimationFrame(function () { window.setTimeout(render, 30); });
+  })();
+</script>
+</body>
+</html>

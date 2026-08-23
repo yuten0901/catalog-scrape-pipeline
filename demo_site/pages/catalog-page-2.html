@@ -1,0 +1,98 @@
+<!doctype html>
+<!--
+  Northwind Components — catalogue page 2 of 4: the page that goes wrong.
+
+  Every record here is rejected, each for a different reason, and each reason is
+  one that occurs constantly in real catalogue data. The rejected rows are
+  exported with the raw strings intact (see rejected.csv) so that whoever owns
+  the data can see exactly what the page said.
+
+  Deliberately, none of these produce a plausible-looking wrong value: a price
+  that quietly became 0.00 or a date that quietly swapped day and month is worse
+  than a row that is missing and accounted for.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Northwind Components — Catalogue (page 2)</title>
+</head>
+<body>
+<header><h1>Northwind Components</h1></header>
+<main id="catalogue">
+
+  <!-- price element absent entirely: required field missing -->
+  <article class="product">
+    <span class="sku">NC-2001</span>
+    <h3 class="title"><a class="link" href="/product/nc-2001.html">Shaft Collar 12mm, Split</a></h3>
+    <p class="stock">In stock</p>
+    <p class="rating star-rating One"></p>
+    <p class="category">Shafting</p>
+    <time class="listed" datetime="2026-07-02">2 July 2026</time>
+  </article>
+
+  <!-- title element present but blank: "element existed and was empty" and
+       "element was missing" are the same absence to a consumer -->
+  <article class="product">
+    <span class="sku">NC-2002</span>
+    <h3 class="title"><a class="link" href="/product/nc-2002.html">   </a></h3>
+    <p class="price">&pound;12.00</p>
+    <p class="stock">In stock</p>
+    <p class="rating star-rating Three"></p>
+    <p class="category">Shafting</p>
+    <time class="listed" datetime="2026-07-02">2 July 2026</time>
+  </article>
+
+  <!-- a placeholder where a number should be -->
+  <article class="product">
+    <span class="sku">NC-2003</span>
+    <h3 class="title"><a class="link" href="/product/nc-2003.html">Grease Cartridge 400g</a></h3>
+    <p class="price">N/A</p>
+    <p class="stock">In stock</p>
+    <p class="rating star-rating Four"></p>
+    <p class="category">Lubrication</p>
+    <time class="listed" datetime="2026-07-03">3 July 2026</time>
+  </article>
+
+  <!-- three decimal places: rounding a scraped price is silent data corruption,
+       so this is rejected rather than turned into 7.51 -->
+  <article class="product">
+    <span class="sku">NC-2004</span>
+    <h3 class="title"><a class="link" href="/product/nc-2004.html">Pneumatic Fitting 8mm Push-Fit</a></h3>
+    <p class="price">&pound;7.505</p>
+    <p class="stock">In stock</p>
+    <p class="rating star-rating Four"></p>
+    <p class="category">Pneumatics</p>
+    <time class="listed" datetime="2026-07-04">4 July 2026</time>
+  </article>
+
+  <!-- 31 February: a date that cannot exist. Reported, never "corrected". -->
+  <article class="product">
+    <span class="sku">NC-2005</span>
+    <h3 class="title"><a class="link" href="/product/nc-2005.html">Servo Motor 400W with Encoder</a></h3>
+    <p class="price">&pound;129.00</p>
+    <p class="stock">In stock</p>
+    <p class="rating star-rating Five"></p>
+    <p class="category">Motion</p>
+    <time class="listed" datetime="31/02/2026">31 February 2026</time>
+  </article>
+
+  <!-- a rating word outside the vocabulary: the site changed something, and
+       nulling the field would hide that -->
+  <article class="product">
+    <span class="sku">NC-2006</span>
+    <h3 class="title"><a class="link" href="/product/nc-2006.html">Coupling Jaw 20mm, Aluminium</a></h3>
+    <p class="price">&pound;23.40</p>
+    <p class="stock">In stock</p>
+    <p class="rating star-rating Twelve"></p>
+    <p class="category">Transmission</p>
+    <time class="listed" datetime="2026-07-06">6 July 2026</time>
+  </article>
+
+</main>
+<nav class="pager">
+  <a class="prev" href="/catalog/page-1.html">&lsaquo; prev</a>
+  <span class="current">2</span>
+  <a class="next" href="/catalog/page-3.html">next &rsaquo;</a>
+</nav>
+</body>
+</html>

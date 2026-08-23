@@ -1,0 +1,96 @@
+<!doctype html>
+<!--
+  Northwind Components — catalogue page 1 of 4.
+
+  Every record on this page is *valid*, but no two of them are formatted the
+  same way. That is the point: this is the page that proves normalization does
+  something. Prices appear as GBP, US grouping, European grouping, an explicit
+  ISO code and a zero-decimal currency; dates appear as a machine-readable
+  attribute, dd/mm/yyyy, "Aug 1, 2026", a relative expression and an ISO
+  timestamp; ratings are encoded in the CSS class, as real storefronts do.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Northwind Components — Catalogue (page 1)</title>
+</head>
+<body>
+<header><h1>Northwind Components</h1></header>
+<main id="catalogue">
+
+  <article class="product">
+    <span class="sku">NC-1001</span>
+    <h3 class="title"><a class="link" href="/product/nc-1001.html">Hex Bolt M8x40, Zinc</a></h3>
+    <p class="price">&pound;51.77</p>
+    <p class="stock">In stock (22 available)</p>
+    <p class="rating star-rating Three"></p>
+    <p class="category">Fasteners</p>
+    <time class="listed" datetime="2026-07-14">14 July 2026</time>
+  </article>
+
+  <!-- Whitespace noise, a non-breaking space and an HTML entity in the title.
+       All three survive naive extraction and break equality comparisons. -->
+  <article class="product">
+    <span class="sku"> NC-1002 </span>
+    <h3 class="title"><a class="link" href="/product/nc-1002.html">
+        Flange&nbsp;Nut  M10 &amp; Washer
+        Set
+    </a></h3>
+    <p class="price">$1,234.50</p>
+    <p class="stock">Out of stock</p>
+    <p class="rating star-rating Four"></p>
+    <p class="category">Fasteners</p>
+    <time class="listed" datetime="07/08/2026">7 August 2026</time>
+  </article>
+
+  <!-- European grouping: the comma is the decimal separator here. -->
+  <article class="product">
+    <span class="sku">NC-1003</span>
+    <h3 class="title"><a class="link" href="/product/nc-1003.html">Ball Bearing 6203-2RS</a></h3>
+    <p class="price">1.234,50 &euro;</p>
+    <p class="stock">Pre-order</p>
+    <p class="rating star-rating Five"></p>
+    <p class="category">Bearings</p>
+    <time class="listed" datetime="Aug 1, 2026">1st August 2026</time>
+  </article>
+
+  <!-- Explicit ISO code instead of a symbol, and a relative date. -->
+  <article class="product">
+    <span class="sku">NC-1004</span>
+    <h3 class="title"><a class="link" href="/product/nc-1004.html">Timing Belt HTD 5M-450</a></h3>
+    <p class="price">USD 19.99</p>
+    <p class="stock">Available &mdash; ships today</p>
+    <p class="rating star-rating Two"></p>
+    <p class="category">Transmission</p>
+    <time class="listed" datetime="3 days ago">this week</time>
+  </article>
+
+  <!-- Zero-decimal currency, and no rating element at all. -->
+  <article class="product">
+    <span class="sku">NC-1005</span>
+    <h3 class="title"><a class="link" href="/product/nc-1005.html">O-Ring Kit, Nitrile (382 pcs)</a></h3>
+    <p class="price">&yen; 4,980</p>
+    <p class="stock">No longer available</p>
+    <p class="category">Seals</p>
+    <time class="listed" datetime="2026-06-30T09:15:00Z">30 June 2026</time>
+  </article>
+
+  <!-- "Backorder - 3 weeks" is not in the availability vocabulary. It becomes
+       `unknown` *and* a warning naming the phrase, rather than a blank cell. -->
+  <article class="product">
+    <span class="sku">NC-1006</span>
+    <h3 class="title"><a class="link" href="/product/nc-1006.html">Linear Rail MGN12H 400mm</a></h3>
+    <p class="price">CHF 89.00</p>
+    <p class="stock">Backorder - 3 weeks</p>
+    <p class="rating star-rating Zero"></p>
+    <p class="category">Motion</p>
+    <time class="listed" datetime="yesterday">yesterday</time>
+  </article>
+
+</main>
+<nav class="pager">
+  <span class="current">1</span>
+  <a class="next" href="/catalog/page-2.html">next &rsaquo;</a>
+</nav>
+</body>
+</html>

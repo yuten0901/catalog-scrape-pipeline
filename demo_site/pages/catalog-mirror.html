@@ -1,0 +1,45 @@
+<!doctype html>
+<!--
+  A partner mirror of the same catalogue, served from the flaky route
+  (/flaky/mirror.html): two 503s, then a 200. It exists to demonstrate two
+  things at once in the headline run:
+
+  * retry with backoff actually recovering, visible in the log; and
+  * duplicate detection working *across sources*, not only across pages.
+
+  The mirror is stale: its NC-1001 still lists last month's price. That is
+  reported as a conflicting duplicate naming `price`, not silently dropped —
+  which copy is correct is a business decision, and the client should be the one
+  making it. NC-6001 is only on the mirror and is kept.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Partner mirror — Northwind Components</title>
+</head>
+<body>
+<main id="catalogue">
+
+  <article class="product">
+    <span class="sku">NC-1001</span>
+    <h3 class="title"><a class="link" href="/product/nc-1001.html">Hex Bolt M8x40, Zinc</a></h3>
+    <p class="price">&pound;49.99</p>
+    <p class="stock">In stock (22 available)</p>
+    <p class="rating star-rating Three"></p>
+    <p class="category">Fasteners</p>
+    <time class="listed" datetime="2026-07-14">14 July 2026</time>
+  </article>
+
+  <article class="product">
+    <span class="sku">NC-6001</span>
+    <h3 class="title"><a class="link" href="/product/nc-6001.html">Thrust Washer 20x36x1</a></h3>
+    <p class="price">&pound;1.85</p>
+    <p class="stock">In stock</p>
+    <p class="rating star-rating Two"></p>
+    <p class="category">Bearings</p>
+    <time class="listed" datetime="2026-04-18">18 April 2026</time>
+  </article>
+
+</main>
+</body>
+</html>

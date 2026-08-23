@@ -1,0 +1,11 @@
+# The demo site publishes a robots.txt because the pipeline reads one before it
+# touches a host, and a rule that is never exercised is a rule nobody can trust.
+# tests/integration/test_robots.py points a source at /private/ and asserts the
+# page is recorded as a `robots_disallowed` failure rather than fetched.
+
+User-agent: *
+Disallow: /private/
+Crawl-delay: 0
+
+User-agent: BadBot
+Disallow: /

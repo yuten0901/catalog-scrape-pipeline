@@ -1,0 +1,43 @@
+<!doctype html>
+<!--
+  Northwind Components — catalogue page 4 of 4: sparse records, and the end.
+
+  Both records omit every optional field. They are valid: an absent optional
+  element means the site said nothing, which is not the same as the site saying
+  something unrecognisable (page 2). The first stays null, the second is a
+  rejection.
+
+  There is no `a.next` here, so pagination stops with `no_next_link` rather than
+  by hitting the `max_pages` guard. A run that always stops at max_pages is a run
+  that may be silently truncating the catalogue.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Northwind Components — Catalogue (page 4)</title>
+</head>
+<body>
+<header><h1>Northwind Components</h1></header>
+<main id="catalogue">
+
+  <article class="product">
+    <span class="sku">NC-4001</span>
+    <h3 class="title"><a class="link" href="/product/nc-4001.html">Spring Washer M6 (100 pcs)</a></h3>
+    <p class="price">&pound;4.10</p>
+  </article>
+
+  <article class="product">
+    <span class="sku">NC-4002</span>
+    <h3 class="title"><a class="link" href="/product/nc-4002.html">Retaining Ring 25mm, External</a></h3>
+    <p class="price">&pound;2.95</p>
+    <p class="stock">Sold out</p>
+    <p class="category">Fasteners</p>
+  </article>
+
+</main>
+<nav class="pager">
+  <a class="prev" href="/catalog/page-3.html">&lsaquo; prev</a>
+  <span class="current">4</span>
+</nav>
+</body>
+</html>
