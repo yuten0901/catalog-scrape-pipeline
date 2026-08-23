@@ -86,13 +86,32 @@ class DuplicateKind(StrEnum):
     """
 
 
+# ISO 4217 minor-unit digits for the currencies this project can parse. Only the
+# exceptions are listed; everything else has two.
+#
+# This table is not decoration. An earlier version of this file assumed every
+# currency had two decimal places, which silently turns "¥4,980" into ¥49.80 —
+# a hundredfold error that looks entirely plausible in a spreadsheet and that no
+# downstream check would ever catch. Zero-decimal currencies are common enough
+# (JPY, KRW, plus most of the ones this project does not claim to support) that
+# the assumption is not safe.
+MINOR_UNIT_DIGITS: dict[str, int] = {"JPY": 0, "KRW": 0}
+DEFAULT_MINOR_UNIT_DIGITS = 2
+
+
+def minor_unit_digits(currency: str) -> int:
+    """How many minor-unit digits ``currency`` has. Two unless listed otherwise."""
+    return MINOR_UNIT_DIGITS.get(currency, DEFAULT_MINOR_UNIT_DIGITS)
+
+
 class Money(BaseModel):
     """A price, stored as an integer number of minor units.
 
     Floats are the classic source of silent corruption in price scraping
     (``19.99`` does not round-trip), and this data ends up in spreadsheets that
     get summed. ``currency`` is ISO 4217 so that ``$`` from two different sites
-    is not merged by accident.
+    is not merged by accident, and the minor-unit scale is looked up per
+    currency rather than assumed — see :data:`MINOR_UNIT_DIGITS`.
     """
 
     model_config = ConfigDict(frozen=True)
@@ -101,16 +120,17 @@ class Money(BaseModel):
     minor: Annotated[int, Field(ge=0)]
 
     @property
+    def digits(self) -> int:
+        """Minor-unit digits for this currency: 2 for GBP, 0 for JPY."""
+        return minor_unit_digits(self.currency)
+
+    @property
     def decimal(self) -> Decimal:
-        """The amount as a decimal, assuming a two-digit minor unit."""
-        # Every currency this project can produce (see normalize.CURRENCY_SYMBOLS)
-        # has an exponent of 2. A wider currency table would need the exponent
-        # stored per currency; asserting the assumption here is cheaper than
-        # pretending to support currencies we cannot parse.
-        return Decimal(self.minor) / Decimal(100)
+        """The amount as a decimal, at this currency's own scale."""
+        return Decimal(self.minor).scaleb(-self.digits)
 
     def __str__(self) -> str:
-        return f"{self.decimal:.2f} {self.currency}"
+        return f"{self.decimal:.{self.digits}f} {self.currency}"
 
 
 class RawRecord(BaseModel):

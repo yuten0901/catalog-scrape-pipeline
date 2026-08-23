@@ -36,7 +36,7 @@ from enum import StrEnum
 from typing import Any
 
 from catalog_scraper.errors import NormalizationError
-from catalog_scraper.models import Availability, Money
+from catalog_scraper.models import Availability, Money, minor_unit_digits
 
 
 class DateOrder(StrEnum):
@@ -117,7 +117,6 @@ CURRENCY_SYMBOLS: dict[str, str] = {
 
 _ISO_CODE = re.compile(r"\b([A-Z]{3})\b")
 _NUMERIC = re.compile(r"\d[\d.,'\s]*\d|\d")
-_TWO_PLACES = Decimal("0.01")
 
 
 def normalize_money(raw: str | None, context: NormalizationContext) -> Money | None:
@@ -133,8 +132,11 @@ def normalize_money(raw: str | None, context: NormalizationContext) -> Money | N
     * If only one appears once, it is grouping when followed by exactly three
       digits (``1,234``) and a decimal separator otherwise (``19,99``).
 
-    More than two decimal places is rejected rather than rounded: rounding a
-    scraped price is data corruption that no downstream check can detect.
+    More decimal places than the currency has is rejected rather than rounded:
+    rounding a scraped price is data corruption that no downstream check can
+    detect. The number of places allowed comes from the currency
+    (:func:`~catalog_scraper.models.minor_unit_digits`), so ``¥4,980`` is 4980
+    yen and ``¥49.80`` is refused rather than quietly reinterpreted.
     """
     text = normalize_text(raw)
     if text is None:
@@ -162,13 +164,17 @@ def normalize_money(raw: str | None, context: NormalizationContext) -> Money | N
 
     if amount < 0:
         raise NormalizationError("out_of_range", f"negative price in {text!r}")
-    if amount != amount.quantize(_TWO_PLACES):
+
+    digits = minor_unit_digits(currency)
+    scaled = amount.scaleb(digits)
+    if scaled != scaled.to_integral_value():
         raise NormalizationError(
             "unparsable",
-            f"{text!r} has more than two decimal places; refusing to round a price",
+            f"{text!r} has more decimal places than {currency} has minor units "
+            f"({digits}); refusing to round a price",
         )
 
-    return Money(currency=currency, minor=int(amount.scaleb(2)))
+    return Money(currency=currency, minor=int(scaled))
 
 
 def _detect_currency(text: str) -> str | None:

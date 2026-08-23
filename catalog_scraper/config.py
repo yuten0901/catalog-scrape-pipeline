@@ -31,6 +31,7 @@ from collections.abc import Mapping
 from pathlib import Path
 from typing import Annotated, Any, Literal, Self
 
+import soupsieve
 import yaml
 from pydantic import BaseModel, ConfigDict, Field, ValidationError, model_validator
 
@@ -109,6 +110,9 @@ class RunSettings(_Base):
     ``change=unknown`` — which is not the same as ``new``."""
     log_format: Literal["text", "json"] = "text"
     log_level: Literal["DEBUG", "INFO", "WARNING", "ERROR"] = "INFO"
+    csv_encoding: Literal["utf-8-sig", "utf-8"] = "utf-8-sig"
+    """``utf-8-sig`` writes a BOM so Excel does not decode ``£`` as ``Â£``.
+    See :func:`catalog_scraper.export._write_csv`."""
 
 
 class FieldMapping(_Base):
@@ -173,6 +177,21 @@ class SourceConfig(_Base):
                 f"them, so a source that cannot supply them would export empty columns."
             )
 
+        # Every selector is compiled here, at load time. A typo in a CSS
+        # selector is otherwise discovered on the first page of the first
+        # source, after the browser has started and several requests have been
+        # made to someone else's server, and only if that particular selector is
+        # reached. This is the cheapest possible place to find it.
+        _check_selector(self.record_selector, f"sources.{self.id}.record_selector")
+        for name, mapping in self.fields.items():
+            _check_selector(mapping.selector, f"sources.{self.id}.fields.{name}.selector")
+        if self.pagination.next_selector:
+            _check_selector(
+                self.pagination.next_selector, f"sources.{self.id}.pagination.next_selector"
+            )
+        if self.wait_for_selector:
+            _check_selector(self.wait_for_selector, f"sources.{self.id}.wait_for_selector")
+
         if self.kind == "browser" and not self.wait_for_selector:
             raise ValueError(
                 "browser sources must set 'wait_for_selector'; without it the page is scraped "
@@ -181,6 +200,14 @@ class SourceConfig(_Base):
         if self.kind == "static" and self.wait_for_selector:
             raise ValueError("'wait_for_selector' is meaningless for a static source")
         return self
+
+
+def _check_selector(selector: str, location: str) -> None:
+    """Compile a CSS selector now so a typo cannot survive until page one."""
+    try:
+        soupsieve.compile(selector)
+    except Exception as exc:  # soupsieve raises several distinct types
+        raise ValueError(f"{location}: {selector!r} is not a valid CSS selector ({exc})") from exc
 
 
 class PipelineConfig(_Base):

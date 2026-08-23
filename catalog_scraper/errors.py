@@ -50,11 +50,19 @@ class FetchError(CatalogScraperError):
         *,
         http_status: int | None = None,
         retry_after_seconds: float | None = None,
+        attempts: int = 1,
     ) -> None:
         super().__init__(message)
         self.kind = kind
         self.http_status = http_status
         self.retry_after_seconds = retry_after_seconds
+        self.attempts = attempts
+        """How many requests were made before giving up.
+
+        Carried on the error rather than recomputed by the caller, because the
+        caller does not know how many of the attempts happened -- and a failure
+        report that says "1 attempt" after three retries is a lie that makes the
+        retry policy look broken."""
 
     @property
     def retryable(self) -> bool:
