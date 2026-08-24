@@ -72,6 +72,8 @@ class Deduplicator:
             kept_url=kept.url,
             dropped_url=dropped.url,
             differing_fields=differing,
+            kept_values={name: _render_value(getattr(kept, name)) for name in differing},
+            dropped_values={name: _render_value(getattr(dropped, name)) for name in differing},
         )
 
     def products(self) -> list[Product]:
@@ -95,6 +97,15 @@ def _render(value: object) -> str:
         # `NC-1001` and `nc-1001` are the same SKU on every site anyone has
         # ever built, and treating them as different silently doubles the export.
         return " ".join(value.split()).casefold()
+    return str(value)
+
+
+def _render_value(value: object) -> str:
+    """Human-readable rendering for the conflict report ("51.77 GBP", not a repr)."""
+    if value is None:
+        return ""
+    if isinstance(value, Money):
+        return str(value)
     return str(value)
 
 

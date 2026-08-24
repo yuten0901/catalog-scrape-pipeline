@@ -39,6 +39,35 @@ from catalog_scraper.errors import NormalizationError
 from catalog_scraper.models import Availability, Money, minor_unit_digits
 
 
+class DecimalSeparator(StrEnum):
+    """Which character separates the fractional part of a price on this source.
+
+    Exists for the same reason :class:`DateOrder` does, and it was added for the
+    same reason: a value that looked parsed was not.
+
+    ``£7.505`` and ``£7,505`` are each ambiguous in isolation. A single separator
+    followed by exactly three digits is either a thousands separator (``7,505``
+    → seven and a half thousand) or a three-decimal price (``7.505``), and no
+    amount of cleverness recovers the answer from one string — the two readings
+    differ by a factor of a thousand and both look entirely plausible in a
+    spreadsheet.
+
+    So it is declared per source, like the date order, and the declaration is
+    consulted **only when the string is genuinely ambiguous**. When both
+    separators appear (``1,234.50``, ``1.234,50``) the rightmost one is the
+    decimal separator no matter what is declared: evidence beats declaration.
+
+    ``AUTO`` keeps the pragmatic default — three trailing digits means grouping,
+    because a price with three decimal places is much rarer than a thousands
+    separator. It is the right guess and it is still a guess; declaring ``DOT``
+    or ``COMMA`` removes it. See docs/data-quality.md.
+    """
+
+    AUTO = "auto"
+    DOT = "dot"
+    COMMA = "comma"
+
+
 class DateOrder(StrEnum):
     """How to read ``03/04/2026``.
 
@@ -60,6 +89,7 @@ class NormalizationContext:
     page_url: str
     now: datetime
     date_order: DateOrder = DateOrder.DMY
+    decimal_separator: DecimalSeparator = DecimalSeparator.AUTO
     default_currency: str | None = None
     """Used only when the text carries no symbol and no ISO code."""
 
@@ -129,8 +159,12 @@ def normalize_money(raw: str | None, context: NormalizationContext) -> Money | N
     * If both ``.`` and ``,`` appear, the **last** one is the decimal separator
       and the other is grouping. This is true for every locale in practice.
     * If only one appears more than once, it is grouping (``1.234.567``).
-    * If only one appears once, it is grouping when followed by exactly three
-      digits (``1,234``) and a decimal separator otherwise (``19,99``).
+    * If only one appears once and is followed by anything other than exactly
+      three digits, it is the decimal separator (``19,99``).
+    * If only one appears once and is followed by exactly three digits
+      (``1,234`` / ``7.505``) the string is genuinely ambiguous, and the
+      source's :class:`DecimalSeparator` declaration decides. Under ``auto`` it
+      is read as grouping.
 
     More decimal places than the currency has is rejected rather than rounded:
     rounding a scraped price is data corruption that no downstream check can
@@ -155,7 +189,9 @@ def normalize_money(raw: str | None, context: NormalizationContext) -> Money | N
         raise NormalizationError("unparsable", f"no numeric amount in {text!r}")
 
     amount_text = re.sub(r"[\s']", "", match.group(0))
-    canonical = _canonical_decimal_string(amount_text, original=text)
+    canonical = _canonical_decimal_string(
+        amount_text, original=text, declared=context.decimal_separator
+    )
 
     try:
         amount = Decimal(canonical)
@@ -201,7 +237,9 @@ _KNOWN_ISO_CODES = frozenset(CURRENCY_SYMBOLS.values()) | {
 }
 
 
-def _canonical_decimal_string(amount: str, *, original: str) -> str:
+def _canonical_decimal_string(
+    amount: str, *, original: str, declared: DecimalSeparator = DecimalSeparator.AUTO
+) -> str:
     """Rewrite a grouped/localised number as a plain ``123.45`` string."""
     has_dot = "." in amount
     has_comma = "," in amount
@@ -220,9 +258,13 @@ def _canonical_decimal_string(amount: str, *, original: str) -> str:
 
     _, _, tail = amount.partition(separator)
     if len(tail) == 3:
-        # `1,234` / `1.234`. Ambiguous in theory, grouping in practice: a price
-        # with exactly three decimal places is far rarer than a thousands
-        # separator, and treating it as decimals would divide the price by 1000.
+        # `1,234` / `1.234`: the one genuinely ambiguous shape. Grouping and
+        # three-decimal readings differ by a factor of 1000 and both look
+        # plausible, so the source gets to say which it is; AUTO falls back to
+        # grouping, which is the commoner case by a wide margin.
+        decimal_char = {DecimalSeparator.DOT: ".", DecimalSeparator.COMMA: ","}.get(declared)
+        if decimal_char == separator:
+            return amount.replace(separator, ".")
         return amount.replace(separator, "")
     if len(tail) == 0:
         raise NormalizationError("unparsable", f"trailing separator in {original!r}")

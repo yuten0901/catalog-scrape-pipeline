@@ -37,7 +37,7 @@ from pydantic import BaseModel, ConfigDict, Field, ValidationError, model_valida
 
 from catalog_scraper.errors import ConfigError
 from catalog_scraper.fields import FIELDS_BY_NAME, REQUIRED_FIELDS
-from catalog_scraper.normalize import DateOrder
+from catalog_scraper.normalize import DateOrder, DecimalSeparator
 
 SUPPORTED_VERSION = 1
 
@@ -154,6 +154,8 @@ class SourceConfig(_Base):
     fields: dict[str, FieldMapping]
     pagination: PaginationSettings = PaginationSettings()
     date_order: DateOrder = DateOrder.DMY
+    decimal_separator: DecimalSeparator = DecimalSeparator.AUTO
+    """Resolves `£7.505`-shaped ambiguity. See :class:`DecimalSeparator`."""
     default_currency: Annotated[str, Field(pattern=r"^[A-Z]{3}$")] | None = None
     wait_for_selector: str | None = None
     """Browser sources only: the selector whose appearance means "rendered"."""

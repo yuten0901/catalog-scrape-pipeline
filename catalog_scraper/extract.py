@@ -110,6 +110,7 @@ def build_product(
         page_url=raw.page_url,
         now=now,
         date_order=source.date_order,
+        decimal_separator=source.decimal_separator,
         default_currency=source.default_currency,
     )
 

@@ -1,0 +1,128 @@
+# The headline configuration: everything the pipeline does, against the demo
+# site that ships with this repository.
+#
+#   catalog-scrape serve-demo --port 8800        # terminal 1
+#   catalog-scrape scrape --config config/demo-local.yaml
+#
+# Nothing here needs editing to try it. `${DEMO_BASE_URL:-...}` falls back to the
+# default port, and points somewhere else if you export the variable — which is
+# exactly how the integration tests run this same file against a server on an
+# ephemeral port. The tests use the shipped configuration rather than a copy,
+# because a config file that no test ever loads is a config file that drifts.
+version: 1
+
+run:
+  output_dir: out
+  formats: [csv, json]
+  state_file: out/state.json     # remove this line to turn change detection off
+  log_level: INFO
+  log_format: text
+  csv_encoding: utf-8-sig        # BOM, so Excel does not render "£" as "Â£"
+
+http:
+  timeout_seconds: 8.0
+  max_attempts: 3                # the demo's flaky route fails twice, then works
+  backoff_base_seconds: 0.4      # 0.4s, 0.8s
+  backoff_max_seconds: 10.0
+  delay_seconds: 0.2             # minimum spacing between requests to one host
+  respect_robots: true
+  user_agent: "catalog-scrape-pipeline/1.0 (+https://github.com/yuten0901/catalog-scrape-pipeline)"
+
+browser:
+  enabled: true
+  timeout_seconds: 15.0
+  headless: true
+
+dedupe:
+  key_fields: [sku]
+  on_conflict: keep_first        # the first listing wins; conflicts are reported
+
+sources:
+  # ---------------------------------------------------------------- static ---
+  # Four pages, followed by the "next" link. Page 2 is deliberately full of
+  # unusable records and page 3 repeats two products from page 1.
+  - id: catalog-static
+    kind: static
+    start_url: "${DEMO_BASE_URL:-http://127.0.0.1:8800}/catalog/page-1.html"
+    record_selector: "article.product"
+    date_order: dmy              # 07/08/2026 is 7 August, not 8 July
+    decimal_separator: dot       # so "£7.505" is 3 decimals (rejected), not £7,505
+    pagination:
+      strategy: next_link
+      next_selector: "nav.pager a.next"
+      max_pages: 10              # a hard stop; the catalogue is 4 pages
+    fields:
+      sku:          { selector: ".sku" }
+      title:        { selector: "h3.title a" }
+      price:        { selector: ".price" }
+      url:          { selector: "h3.title a", attr: href }
+      availability: { selector: ".stock" }
+      rating:       { selector: ".rating", attr: class }   # "star-rating Three"
+      category:     { selector: ".category" }
+      listed_on:    { selector: "time.listed", attr: datetime }
+
+  # --------------------------------------------------------------- browser ---
+  # The same shop, rendered client-side. Fetched statically this page yields
+  # zero records; that is asserted in tests/integration/test_static_vs_browser.py.
+  - id: catalog-js
+    kind: browser
+    start_url: "${DEMO_BASE_URL:-http://127.0.0.1:8800}/js/catalog.html"
+    record_selector: "#grid article.product"
+    wait_for_selector: "#grid[data-rendered]"   # set even when the grid is empty
+    date_order: dmy
+    decimal_separator: dot
+    pagination:
+      strategy: page_param
+      page_param: page
+      start_page: 1
+      max_pages: 5               # page 3 renders nothing, which ends pagination
+    fields:
+      sku:          { selector: ".sku" }
+      title:        { selector: "h3.title a" }
+      price:        { selector: ".price" }
+      url:          { selector: "h3.title a", attr: href }
+      availability: { selector: ".stock" }
+      rating:       { selector: ".rating" }                # "4.5 out of 5"
+      category:     { selector: ".category" }
+      listed_on:    { selector: "time.listed", attr: datetime }
+
+  # ----------------------------------------------------------------- flaky ---
+  # A partner mirror behind a route that answers 503 twice before it recovers.
+  # It is in the headline run on purpose: retry-with-backoff is a claim, and this
+  # makes it something you can watch happen.
+  - id: mirror-flaky
+    kind: static
+    start_url: "${DEMO_BASE_URL:-http://127.0.0.1:8800}/flaky/mirror.html"
+    record_selector: "article.product"
+    date_order: dmy
+    decimal_separator: dot
+    pagination:
+      strategy: none
+    fields:
+      sku:          { selector: ".sku" }
+      title:        { selector: "h3.title a" }
+      price:        { selector: ".price" }
+      url:          { selector: "h3.title a", attr: href }
+      availability: { selector: ".stock" }
+      rating:       { selector: ".rating", attr: class }
+      category:     { selector: ".category" }
+      listed_on:    { selector: "time.listed", attr: datetime }
+
+  # ---------------------------------------------------------------- broken ---
+  # A supplier feed that was redesigned. It returns HTTP 200 and is full of
+  # products, but `article.product` no longer matches anything. This is how a
+  # working scraper actually dies, and it is the reason this run exits 1.
+  #
+  # Delete this source to see a clean exit 0.
+  - id: legacy-feed
+    kind: static
+    start_url: "${DEMO_BASE_URL:-http://127.0.0.1:8800}/catalog/redesigned.html"
+    record_selector: "article.product"
+    date_order: dmy
+    pagination:
+      strategy: none
+    fields:
+      sku:          { selector: ".sku" }
+      title:        { selector: "h3.title a" }
+      price:        { selector: ".price" }
+      url:          { selector: "h3.title a", attr: href }

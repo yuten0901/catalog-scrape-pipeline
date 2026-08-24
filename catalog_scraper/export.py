@@ -147,6 +147,8 @@ _DUPLICATE_COLUMNS = (
     "key",
     "kind",
     "differing_fields",
+    "kept_values",
+    "dropped_values",
     "kept_source_id",
     "kept_url",
     "dropped_source_id",
@@ -160,11 +162,17 @@ def _duplicate_dict(item: DuplicateRecord) -> dict[str, Any]:
         "key": item.key.replace("\x1f", " | "),
         "kind": item.kind.value,
         "differing_fields": ", ".join(item.differing_fields),
+        "kept_values": _render_values(item.kept_values),
+        "dropped_values": _render_values(item.dropped_values),
         "kept_source_id": item.kept_source_id,
         "kept_url": item.kept_url,
         "dropped_source_id": item.source_id,
         "dropped_url": item.dropped_url,
     }
+
+
+def _render_values(values: dict[str, str]) -> str:
+    return "; ".join(f"{name}={value}" for name, value in values.items())
 
 
 _FAILURE_COLUMNS = ("source_id", "page_no", "url", "kind", "attempts", "message")

@@ -250,6 +250,16 @@ class DuplicateRecord(BaseModel):
     differing_fields: list[str] = Field(default_factory=list)
     """Empty for :attr:`DuplicateKind.IDENTICAL`; populated for conflicts."""
 
+    kept_values: dict[str, str] = Field(default_factory=dict)
+    dropped_values: dict[str, str] = Field(default_factory=dict)
+    """The differing fields' actual values, on both sides.
+
+    Naming the field ("they disagree about `price`") is not enough to act on:
+    the question a client has is *which number is right*, and answering it from
+    the field name alone means re-fetching both pages. Only the differing fields
+    are carried, so a conflict on one field does not copy the whole record
+    twice into the report."""
+
 
 class PageFailure(BaseModel):
     """A page that never produced records."""
