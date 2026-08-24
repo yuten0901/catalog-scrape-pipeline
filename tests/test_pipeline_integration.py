@@ -32,6 +32,7 @@ def test_shipped_config_runs_static_browser_retry_and_failure_paths(
     ).run()
 
     assert report.exit_code == 1
+    assert report.duration_seconds > 0
     assert report.exported == 16
     assert report.totals == {
         "pages_fetched": 9,

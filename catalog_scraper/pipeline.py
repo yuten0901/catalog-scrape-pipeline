@@ -19,6 +19,7 @@ results are worth delivering; partial results presented as complete are not.
 
 from __future__ import annotations
 
+import time
 import uuid
 from collections import Counter
 from datetime import UTC, datetime
@@ -101,6 +102,7 @@ class Pipeline:
 
     def run(self) -> RunReport:
         started = self._clock.now()
+        monotonic_started = time.monotonic()
         run_id = uuid.uuid4().hex[:12]
         self._log.info(
             "run.started",
@@ -120,7 +122,12 @@ class Pipeline:
             # unless you know its name.
             self._close_fetchers()
 
-        report = self._finish(run_id, started, source_reports)
+        report = self._finish(
+            run_id,
+            started,
+            source_reports,
+            duration_seconds=time.monotonic() - monotonic_started,
+        )
         self._log_summary(report)
         return report
 
@@ -300,7 +307,12 @@ class Pipeline:
     # ------------------------------------------------------------------
 
     def _finish(
-        self, run_id: str, started: datetime, source_reports: list[SourceReport]
+        self,
+        run_id: str,
+        started: datetime,
+        source_reports: list[SourceReport],
+        *,
+        duration_seconds: float,
     ) -> RunReport:
         finished = self._clock.now()
         config = self._config
@@ -364,7 +376,10 @@ class Pipeline:
             run_id=run_id,
             started_at=started,
             finished_at=finished,
-            duration_seconds=round((finished - started).total_seconds(), 3),
+            # Elapsed time is deliberately independent of the injectable data
+            # clock. ``--now`` freezes relative-date interpretation but must not
+            # turn a four-second browser run into a reported duration of zero.
+            duration_seconds=round(duration_seconds, 3),
             config_path=config.source_path,
             config_sha256=config.source_sha256,
             state_file=config.run.state_file,
