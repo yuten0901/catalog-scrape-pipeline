@@ -5,8 +5,8 @@ an HTTP request, so a source is ``kind: browser`` only when the markup that
 arrives over the wire genuinely does not contain the data. In this repository
 that case is real and demonstrable: ``/js/catalog.html`` ships an empty ``<div>``
 and builds its product list from JSON one frame after load, and
-``tests/integration/test_static_vs_browser.py`` asserts that the static fetcher
-gets zero records from it while the browser gets all of them.
+``tests/test_pipeline_integration.py`` asserts that the browser path renders
+the records that are absent from the static response.
 
 Two failure modes get explicit handling because both are common and both are
 easy to hide.
@@ -86,8 +86,9 @@ class BrowserFetcher:
         browser = self._ensure_browser()
         timeout_ms = self._settings.timeout_seconds * 1000
         started = time.monotonic()
-        page = browser.new_page(user_agent=self._user_agent)
+        page = None
         try:
+            page = browser.new_page(user_agent=self._user_agent)
             response = page.goto(url, timeout=timeout_ms, wait_until="domcontentloaded")
             status = response.status if response is not None else 0
             if status >= 400:
@@ -105,7 +106,8 @@ class BrowserFetcher:
         except Exception as exc:
             raise _as_fetch_error(exc, url, wait_for, self._settings.timeout_seconds) from exc
         finally:
-            page.close()
+            if page is not None:
+                page.close()
 
         self._pages_rendered += 1
         return FetchedPage(
