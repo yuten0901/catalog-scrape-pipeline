@@ -15,6 +15,7 @@ dist/
 .ruff_cache/
 .coverage
 htmlcov/
+demo-server.*.log
 
 # Pipeline output. Generated data is reproducible from the fixtures; committing
 # it would rot against the code. examples/ holds a small curated sample instead.

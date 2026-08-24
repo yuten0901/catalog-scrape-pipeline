@@ -91,7 +91,7 @@ def write_outputs(
             written[f"{name}.csv"] = str(path)
         if "json" in formats:
             path = output_dir / f"{name}.json"
-            _write_json(path, name, records, rows)
+            _write_json(path, name, records, rows, duplicates)
             written[f"{name}.json"] = str(path)
 
     return written
@@ -221,7 +221,11 @@ def _csv_cell(value: Any) -> str:
 
 
 def _write_json(
-    path: Path, name: str, records: list[dict[str, Any]], rows: Sequence[ProductRow]
+    path: Path,
+    name: str,
+    records: list[dict[str, Any]],
+    rows: Sequence[ProductRow],
+    duplicates: Sequence[DuplicateRecord],
 ) -> None:
     """Write a JSON array.
 
@@ -233,6 +237,16 @@ def _write_json(
         payload: list[dict[str, Any]] = [
             record | {"price": _price_object(row)}
             for record, row in zip(records, rows, strict=True)
+        ]
+    elif name == "duplicates":
+        payload = [
+            record
+            | {
+                "differing_fields": item.differing_fields,
+                "kept_values": item.kept_values,
+                "dropped_values": item.dropped_values,
+            }
+            for record, item in zip(records, duplicates, strict=True)
         ]
     else:
         payload = records
