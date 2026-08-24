@@ -129,7 +129,8 @@ python -m mypy catalog_scraper demo_site tests
 
 The suite uses the shipped configuration file and a real local HTTP server. The browser-marked test
 launches real Chromium. See [the test strategy](docs/test-strategy.md) for test levels, failure
-semantics, and mutation checks.
+semantics, and mutation checks. The recorded negative results are in
+[the mutation-testing report](docs/mutation-testing.md).
 
 ## Project structure
 
