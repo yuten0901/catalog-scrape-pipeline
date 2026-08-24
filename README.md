@@ -117,7 +117,8 @@ documentation claim.
 
 Output files are `products`, `rejected`, `duplicates`, and `failures` in both CSV and JSON, plus
 `run-report.json`. CSV is Excel-friendly UTF-8 with a BOM; JSON preserves nested price and conflict
-structures.
+structures. A two-record [JSON output sample](examples/products.sample.json) is committed for a
+quick review without running the project.
 
 ## Testing
 

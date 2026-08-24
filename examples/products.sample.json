@@ -1,0 +1,46 @@
+[
+  {
+    "sku": "NC-1001",
+    "title": "Hex Bolt M8x40, Zinc",
+    "price_amount": "51.77",
+    "price_currency": "GBP",
+    "availability": "in_stock",
+    "rating": 3.0,
+    "category": "Fasteners",
+    "listed_on": "2026-07-14",
+    "url": "http://127.0.0.1:8800/product/nc-1001.html",
+    "source_id": "catalog-static",
+    "page_no": 1,
+    "scraped_at": "2026-08-24T09:00:00+00:00",
+    "change": "new",
+    "content_hash": "ffaa47172b9623e17859bf5d6d359bf1e7f544ad72880113357e65cfdd93bf24",
+    "price": {
+      "currency": "GBP",
+      "amount": "51.77",
+      "minor_units": 5177,
+      "minor_unit_digits": 2
+    }
+  },
+  {
+    "sku": "NC-1002",
+    "title": "Flange Nut M10 & Washer Set",
+    "price_amount": "1234.50",
+    "price_currency": "USD",
+    "availability": "out_of_stock",
+    "rating": 4.0,
+    "category": "Fasteners",
+    "listed_on": "2026-08-07",
+    "url": "http://127.0.0.1:8800/product/nc-1002.html",
+    "source_id": "catalog-static",
+    "page_no": 1,
+    "scraped_at": "2026-08-24T09:00:00+00:00",
+    "change": "new",
+    "content_hash": "434bf233beaf086aace6eb574d9f8ff1ed74b95ecbf03abc9cc05904a8faf907",
+    "price": {
+      "currency": "USD",
+      "amount": "1234.50",
+      "minor_units": 123450,
+      "minor_unit_digits": 2
+    }
+  }
+]
