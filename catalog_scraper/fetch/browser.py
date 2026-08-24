@@ -102,7 +102,7 @@ class BrowserFetcher:
             final_url = page.url
         except FetchError:
             raise
-        except Exception as exc:  # noqa: BLE001 - normalised into FetchError below
+        except Exception as exc:
             raise _as_fetch_error(exc, url, wait_for, self._settings.timeout_seconds) from exc
         finally:
             page.close()
@@ -131,7 +131,7 @@ class BrowserFetcher:
         try:
             self._playwright = sync_playwright().start()
             self._browser = self._playwright.chromium.launch(headless=self._settings.headless)
-        except Exception as exc:  # noqa: BLE001 - reported, never swallowed
+        except Exception as exc:
             self._shutdown()
             raise FetchError(
                 FailureKind.BROWSER_UNAVAILABLE,

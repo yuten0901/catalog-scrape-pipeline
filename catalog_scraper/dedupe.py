@@ -25,7 +25,16 @@ from catalog_scraper.models import DuplicateKind, DuplicateRecord, Money, Produc
 # `scraped_at` are excluded for the same reason they are excluded from
 # `Product.content_hash`: a product appearing on a different page of a different
 # site has not changed.
-_COMPARED_FIELDS = ("sku", "title", "price", "availability", "rating", "category", "listed_on", "url")
+_COMPARED_FIELDS = (
+    "sku",
+    "title",
+    "price",
+    "availability",
+    "rating",
+    "category",
+    "listed_on",
+    "url",
+)
 
 
 class Deduplicator:

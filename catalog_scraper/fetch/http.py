@@ -4,7 +4,7 @@ Three decisions in here are worth a client's attention.
 
 **Only some failures are retried.** A 404 and a robots.txt refusal are not
 transient; retrying them adds load to someone else's server and delays the
-report by exactly ``max_attempts × backoff`` seconds for no gain. The decision
+report by exactly ``max_attempts x backoff`` seconds for no gain. The decision
 lives on :class:`~catalog_scraper.errors.FetchError.retryable`, next to the
 failure taxonomy, rather than being spread through this loop.
 
@@ -136,7 +136,7 @@ class HttpFetcher:
             # than our own cap: the cap protects the run's duration, but ignoring
             # an explicit Retry-After is how a polite client gets banned.
             delay = max(delay, error.retry_after_seconds)
-        return delay
+        return float(delay)
 
     def close(self) -> None:
         self._client.close()

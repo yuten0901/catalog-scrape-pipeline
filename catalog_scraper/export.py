@@ -22,9 +22,10 @@ from __future__ import annotations
 
 import csv
 import json
+from collections.abc import Iterable, Sequence
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Iterable, Sequence
+from typing import Any
 
 from catalog_scraper.models import (
     ChangeStatus,
@@ -230,7 +231,8 @@ def _write_json(
     """
     if name == "products":
         payload: list[dict[str, Any]] = [
-            record | {"price": _price_object(row)} for record, row in zip(records, rows, strict=True)
+            record | {"price": _price_object(row)}
+            for record, row in zip(records, rows, strict=True)
         ]
     else:
         payload = records

@@ -448,7 +448,7 @@ class Pipeline:
                 continue
             try:
                 fetcher.close()
-            except Exception as exc:  # noqa: BLE001 - a close failure must not hide the run
+            except Exception as exc:
                 self._log.warning("fetcher.close_failed", error=f"{type(exc).__name__}: {exc}")
 
     def _record_failure(

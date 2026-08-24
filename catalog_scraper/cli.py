@@ -26,9 +26,9 @@ from __future__ import annotations
 
 import argparse
 import sys
+from collections.abc import Sequence
 from datetime import datetime
 from pathlib import Path
-from typing import Sequence
 
 from catalog_scraper import __version__
 from catalog_scraper.clock import FixedClock, SystemClock
@@ -137,7 +137,8 @@ def _validate(config: PipelineConfig) -> int:
 
 def _scrape(config: PipelineConfig, args: argparse.Namespace) -> int:
     if args.output_dir:
-        config = config.model_copy(update={"run": config.run.model_copy(update={"output_dir": args.output_dir})})
+        run = config.run.model_copy(update={"output_dir": args.output_dir})
+        config = config.model_copy(update={"run": run})
     if args.source:
         selected = _select_sources(config, args.source)
         if selected is None:
@@ -204,7 +205,8 @@ def _print_summary(report: RunReport) -> None:
     print(f"    exported        {report.exported:>6}")
     print(f"    rejected        {totals['rejected']:>6}")
     print(
-        f"    duplicates      {totals['duplicates_identical'] + totals['duplicates_conflicting']:>6}"
+        "    duplicates      "
+        f"{totals['duplicates_identical'] + totals['duplicates_conflicting']:>6}"
         f"   ({totals['duplicates_conflicting']} conflicting)"
     )
 
@@ -222,7 +224,10 @@ def _print_summary(report: RunReport) -> None:
     if report.failures:
         print("\n  failed pages")
         for failure in report.failures:
-            print(f"    [{failure.kind.value}] {failure.source_id} p{failure.page_no} {failure.url}")
+            print(
+                f"    [{failure.kind.value}] {failure.source_id} "
+                f"p{failure.page_no} {failure.url}"
+            )
             print(f"      {failure.message}")
 
     if report.warnings:

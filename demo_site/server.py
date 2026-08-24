@@ -83,7 +83,7 @@ class _Handler(BaseHTTPRequestHandler):
     # Set on the server object by DemoSite.
     site: DemoSite
 
-    def do_GET(self) -> None:  # noqa: N802  (BaseHTTPRequestHandler's API)
+    def do_GET(self) -> None:
         parsed = urlsplit(self.path)
         path = parsed.path
         site = self.site
@@ -127,7 +127,11 @@ class _Handler(BaseHTTPRequestHandler):
 
     def _send_file(self, filename: str) -> None:
         body = (PAGES / filename).read_bytes()
-        content_type = "text/plain; charset=utf-8" if filename.endswith(".txt") else "text/html; charset=utf-8"
+        content_type = (
+            "text/plain; charset=utf-8"
+            if filename.endswith(".txt")
+            else "text/html; charset=utf-8"
+        )
         self.send_response(200)
         self.send_header("Content-Type", content_type)
         self.send_header("Content-Length", str(len(body)))
@@ -146,7 +150,7 @@ class _Handler(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(body)
 
-    def log_message(self, format: str, *args: object) -> None:  # noqa: A002
+    def log_message(self, format: str, *args: object) -> None:
         """Silence the default stderr access log.
 
         The pipeline's own structured log is the thing under observation during a
@@ -167,7 +171,8 @@ class DemoSite:
 
     @property
     def base_url(self) -> str:
-        host, port = self._server.server_address[0], self._server.server_address[1]
+        raw_host, port = self._server.server_address[0], self._server.server_address[1]
+        host = raw_host.decode("ascii") if isinstance(raw_host, bytes) else raw_host
         return f"http://{host}:{port}"
 
     def start(self) -> str:

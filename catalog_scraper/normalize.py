@@ -330,26 +330,29 @@ def normalize_date(raw: str | None, context: NormalizationContext) -> date | Non
     relative = _RELATIVE.match(lowered)
     if relative:
         quantity, unit = int(relative.group(1)), relative.group(2)
-        days = quantity * 7 if unit.startswith("week") else quantity if unit.startswith("day") else 0
+        days = quantity * 7 if unit.startswith("week") else quantity
         return date.fromordinal(today.toordinal() - days)
 
     iso = _ISO.match(text)
     if iso:
-        return _build_date(*(int(part) for part in iso.groups()), original=text)
+        year, iso_month, day = (int(part) for part in iso.groups())
+        return _build_date(year, iso_month, day, text)
 
     month_first = _MONTH_FIRST.match(text)
     if month_first:
-        month = _MONTHS.get(month_first.group(1).lower())
-        if month is None:
+        named_month = _MONTHS.get(month_first.group(1).lower())
+        if named_month is None:
             raise NormalizationError("unparsable", f"unknown month name in {text!r}")
-        return _build_date(int(month_first.group(3)), month, int(month_first.group(2)), text)
+        return _build_date(
+            int(month_first.group(3)), named_month, int(month_first.group(2)), text
+        )
 
     day_first = _DAY_FIRST.match(text)
     if day_first:
-        month = _MONTHS.get(day_first.group(2).lower())
-        if month is None:
+        named_month = _MONTHS.get(day_first.group(2).lower())
+        if named_month is None:
             raise NormalizationError("unparsable", f"unknown month name in {text!r}")
-        return _build_date(int(day_first.group(3)), month, int(day_first.group(1)), text)
+        return _build_date(int(day_first.group(3)), named_month, int(day_first.group(1)), text)
 
     slashed = _SLASHED.match(text)
     if slashed:

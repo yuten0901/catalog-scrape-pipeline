@@ -103,7 +103,7 @@ class DedupeSettings(_Base):
 class RunSettings(_Base):
     output_dir: str = "out"
     formats: Annotated[list[Literal["csv", "json"]], Field(min_length=1)] = Field(
-        default_factory=lambda: ["csv", "json"]
+        default_factory=lambda: ["csv", "json"]  # type: ignore[arg-type]
     )
     state_file: str | None = None
     """Enables change detection when set. ``None`` means every product reports
