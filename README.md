@@ -1,5 +1,12 @@
 # Catalog Scrape Pipeline
 
+[![CI](https://github.com/yuten0901/catalog-scrape-pipeline/actions/workflows/ci.yml/badge.svg)](https://github.com/yuten0901/catalog-scrape-pipeline/actions/workflows/ci.yml)
+![Python](https://img.shields.io/badge/python-3.12%2B-blue)
+![Playwright](https://img.shields.io/badge/Playwright-2EAD33)
+![License](https://img.shields.io/badge/license-MIT-green)
+
+**Three disagreeing supplier feeds become one clean dataset — plus the evidence explaining every record that was rejected, deduplicated, or lost to a failed page.**
+
 A configurable data-collection pipeline that turns messy catalogue pages into clean CSV and JSON,
 while preserving the rejected records, duplicate conflicts, and failed pages needed to audit a run.
 
